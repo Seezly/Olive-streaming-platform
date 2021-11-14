@@ -20,7 +20,7 @@ class MyDocument extends Document {
 		return (
 			<Html lang="en" className="text-base">
 				<Head></Head>
-				<body className="font-body text-blackCoffee leading-8 bg-isabelline dark:bg-blackCoffee dark:text-isabelline min-h-screen">
+				<body className="font-body text-blackCoffee leading-8 bg-isabelline dark:bg-blackCoffee dark:text-isabelline min-h-screen relative">
 					<Main />
 					<NextScript />
 				</body>
