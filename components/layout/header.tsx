@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Search, Bell, Settings, User, Menu, Mic, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,10 +14,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useAuth } from '@/lib/hooks/use-auth'
+import { signOut } from 'next-auth/react'
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [isLoggedIn, setIsLoggedIn] = useState(false) // This would come from auth context
+  const { user, isAuthenticated } = useAuth()
+  const router = useRouter()
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+    }
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,7 +44,7 @@ export function Header() {
 
         {/* Search */}
         <div className="flex-1 max-w-md mx-8">
-          <div className="relative">
+          <form onSubmit={handleSearch} className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
               type="text"
@@ -42,17 +53,19 @@ export function Header() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-4"
             />
-          </div>
+          </form>
         </div>
 
         {/* Actions */}
         <div className="flex items-center space-x-4">
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <>
               {/* Go Live Button */}
-              <Button className="bg-stream-purple hover:bg-stream-purple-dark text-white">
-                <Video className="w-4 h-4 mr-2" />
-                Go Live
+              <Button className="bg-stream-purple hover:bg-stream-purple-dark text-white" asChild>
+                <Link href="/dashboard/stream">
+                  <Video className="w-4 h-4 mr-2" />
+                  Go Live
+                </Link>
               </Button>
 
               {/* Notifications */}
@@ -65,26 +78,32 @@ export function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=64&h=64&dpr=1" />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={user?.avatar} />
+                      <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
+                  <DropdownMenuItem asChild>
+                    <Link href={`/${user?.username}`}>
+                      <User className="mr-2 h-4 w-4" />
+                      My Channel
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard">
+                      <Mic className="mr-2 h-4 w-4" />
+                      Creator Dashboard
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Mic className="mr-2 h-4 w-4" />
-                    Creator Dashboard
+                  <DropdownMenuItem asChild>
+                    <Link href="/dashboard/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => signOut()}>
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -93,10 +112,10 @@ export function Header() {
           ) : (
             <div className="flex items-center space-x-2">
               <Button variant="ghost" asChild>
-                <Link href="/login">Log In</Link>
+                <Link href="/auth/signin">Log In</Link>
               </Button>
               <Button className="bg-stream-purple hover:bg-stream-purple-dark text-white" asChild>
-                <Link href="/signup">Sign Up</Link>
+                <Link href="/auth/signup">Sign Up</Link>
               </Button>
             </div>
           )}

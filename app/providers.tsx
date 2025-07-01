@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
+import { SessionProvider } from 'next-auth/react'
 import { io, Socket } from 'socket.io-client'
 
 interface SocketContextType {
@@ -21,7 +22,7 @@ export const useSocket = () => {
   return context
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
 
@@ -47,5 +48,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <SocketContext.Provider value={{ socket, isConnected }}>
       {children}
     </SocketContext.Provider>
+  )
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider>
+      <SocketProvider>
+        {children}
+      </SocketProvider>
+    </SessionProvider>
   )
 }
