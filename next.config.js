@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     appDir: true,
+    optimizeFonts: false,
   },
   images: {
     domains: ['images.pexels.com', 'cdn.pixabay.com'],
